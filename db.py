@@ -42,7 +42,7 @@ def get_data():
     cur.execute("SELECT * FROM json_data")
     result = cur.fetchall()
     #a = json.loads(result[1][0])
-    print(result[0][1])
+    #print(result[0][1])
     #print (b,"dsadsda")
     conn.close()
     #result = json.loads(result)
