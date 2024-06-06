@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Записи</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="records">
+        <!-- Здесь будут отображаться записи -->
+    </div>
+    <button id="load-more">Загрузить еще</button>
+
+    <script>
+        var offset = 0;
+        $('#load-more').click(function() {
+            $.ajax({
+                url: '/api/next_records?offset=' + offset,
+                type: 'GET',
+                success: function(data) {
+                    // Очистка текущих записей
+                    $('#records').empty();
+                    // Отображение полученных записей на странице
+                    data.forEach(function(record) {
+                        $('#records').append('<p>' + record[1] + '</p>');
+                    });
+                    offset += 10;
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

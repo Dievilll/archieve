@@ -12,3 +12,9 @@ html{
     color: white !important;
 }
 
+#cont-butts
+{
+    display: flex;
+    justify-content:space-between;
+}
+
