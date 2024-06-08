@@ -33,11 +33,11 @@ async def root(request:Request):
     return templates.TemplateResponse("archieve.html", {"request": request, "timer":timers})
 
 @app.get("/api/get_recs")
-async def get_records(offset: int = 0, limit: int = 10):
+async def get_records(offset: int = 0):
     global timers
     print(timers)
     #print(offset, limit)
-    records = get_data_one_page(offset, limit)
+    records = get_data_one_page(offset)
 
     return records
 
@@ -45,51 +45,22 @@ async def get_records(offset: int = 0, limit: int = 10):
 async def set_timer(timer):
     global timers
     timers = int(timer)
+    
     print(type(timers))
     
     #scheduler.add_job(my_task, 'interval', seconds=3, id='timer')
     #scheduler.remove_all_jobs()
     #scheduler.start()
-    
+
+    try:
+        scheduler.pause()
+        scheduler.remove_all_jobs()
+        scheduler.add_job(my_task, 'interval', args = [timers],  hours=1)
+        scheduler.resume()
+    except:
+        scheduler.add_job(my_task, 'interval', args = [timers], hours=1)
+        scheduler.start()
     #scheduler.remove_job('timer')
-    if timers == 0:
-        print("null")
-        try:
-            scheduler.pause()
-            scheduler.remove_all_jobs()
-            scheduler.add_job(my_task, 'interval', days=1, id='timer')
-            scheduler.resume()
-        except:
-            scheduler.add_job(my_task, 'interval', days=1, id='timer')
-            scheduler.start()
-    elif timers == 1:
-        print("odin")
-        try:
-            scheduler.pause()
-            scheduler.remove_all_jobs()
-            scheduler.add_job(my_task, 'interval', days=7, id='timer')
-            scheduler.resume()
-        except:
-            scheduler.add_job(my_task, 'interval', days=7, id='timer')
-            scheduler.start()
-    elif timers == 2:
-        try:
-            scheduler.pause()
-            scheduler.remove_all_jobs()
-            scheduler.add_job(my_task, 'interval', days=14, id='timer')
-            scheduler.resume()
-        except:
-            scheduler.add_job(my_task, 'interval', days=14, id='timer')
-            scheduler.start()
-    elif timers == 3:
-        try:
-            scheduler.pause()
-            scheduler.remove_all_jobs()
-            scheduler.add_job(my_task, 'interval', days=30, id='timer')
-            scheduler.resume()
-        except:
-            scheduler.add_job(my_task, 'interval', days=30, id='timer')
-            scheduler.start()
     
     print(timers, "set timer")
 
