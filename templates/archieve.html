@@ -81,7 +81,7 @@
                     url: '/api/set_timer?timer=' + timer,
                     type: 'POST',
                     error: function(error) {
-                        console.log(error);
+                        console.log(error + "Ошибка установки значения таймера");
                     }
                 });
             };
@@ -104,10 +104,24 @@
                         }
                     },
                     error: function(error) {
-                        console.log(error);
+                        console.log(error + "Ошибка получения таймера");
                     }
                 });
             };
+
+            function get_offset() {
+                $.ajax({
+                    url: '/api/get_id_first_rec',
+                    type: 'GET',
+                    success: function(data) {
+                        offset = data;
+                    },
+                    error: function(error) {
+                        console.log(error + "Ошибка получения сдвига id данных");
+                    }
+                });
+            };
+
             function change_timer() {
                 const text = this.innerText;
                 document.getElementById('time_to_delete').innerText = text;
@@ -146,7 +160,7 @@
                         });
                     },
                     error: function(error) {
-                        console.log(error);
+                        console.log(error + "Ошибка вывода данных");
                     }
                 });
             };
@@ -154,14 +168,17 @@
             $(document).ready(function() {
                 loadrecs(offset);
                 get_timer();
+                get_offset();
             });
 
             $('#next').click(function() {
                 offset += 10;
+                console.log(offset);
                 loadrecs(offset);
             });
             $('#prev').click(function() {
                 offset -= 10;
+                console.log(offset);
                 loadrecs(offset);
             });
         </script>
