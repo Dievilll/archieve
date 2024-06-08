@@ -10,12 +10,9 @@
         <link rel="stylesheet" href="{{ url_for('static', path='styles/index.css') }}">
         <script src="{{ url_for('static', path='/js/index.js') }}"></script>
         <script src="{{ url_for('static', path='/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        
-
     </head>
 
     <body>
-        
         <div class="header">
             <div class="navbar navbar-dark bg-dark">
                 <div class="container-fluid" style="display: flex; align-items: center; justify-content: center" >
@@ -29,7 +26,6 @@
             </div>
         </div>
 
-
         <div class="container" style="margin-top: 50px;">
             <div id="cont-butts">
                 <button id="prev" class="btn btn-primary" style="width: 40px; height:40px; border-radius:10px; color:white;">
@@ -42,25 +38,91 @@
             </div>
             
         </div>
-
-        <p>{{id}}</p>
+        <div class="container" style="display: flex; justify-content: center">
+            <a style="margin-top: 6px;margin-right: 10px">Очистка каждые:</a>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle " type="button" id="time_to_delete" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                <ul class="dropdown-menu" aria-labelledby="time_to_delete">
+                  <li><button id="one_day" class="dropdown-item" >1 день</button></li>
+                  <li><button id="week" class="dropdown-item" href="#">7 дней </button></li>
+                  <li><button id="two_week" class="dropdown-item" href="#">14 дней</button></li>
+                  <li><button id="month" class="dropdown-item" href="#">30 дней</button></li>
+                </ul>
+              </div>
+        </div>
         <div class="container" style="margin-top: 50px; width:50%">
             <table class="table">
                 <thead style="border-style:none">
                     <tr style="border: 0;">
                       <th style="font-size: 32px; color:#3c89fd; text-align: center" scope="col">ID</th>
                       <th style="font-size: 32px; color:#3c89fd; text-align: center" scope="col">RECEIVED FROM</th>
+                      <th style="font-size: 32px; color:#3c89fd; text-align: center" scope="col">DATE</th>
                     </tr>
                 </thead>
-                <tbody id="records">
-
-                </tbody>
-                
+                <tbody id="records"></tbody>
             </table>
-            
         </div>
 
         <script>
+            const el = document.getElementById("time_to_delete");
+            const one_day = document.getElementById('one_day');
+            const week = document.getElementById('week');
+            const two_week = document.getElementById('two_week');
+            const month = document.getElementById('month');
+
+            one_day.addEventListener('click', change_timer);
+            week.addEventListener('click', change_timer);
+            two_week.addEventListener('click', change_timer);
+            month.addEventListener('click', change_timer);
+
+            console.log(el.innerText);
+            function set_timer(timer) {
+                $.ajax({
+                    url: '/api/set_timer?timer=' + timer,
+                    type: 'POST',
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            };
+
+            function get_timer(timer) {
+                $.ajax({
+                    url: '/api/get_timer',
+                    type: 'GET',
+                    success: function(data) {
+                        timer = data;
+                        const el = document.getElementById('time_to_delete');
+                        if (timer == 0) {
+                            el.innerText = '1 день';
+                        } else if (timer == 1) {
+                            el.innerText = '7 дней';
+                        } else if (timer == 2) {
+                            el.innerText = '14 дней';
+                        } else if (timer == 3) {
+                            el.innerText = '30 дней';
+                        }
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            };
+            function change_timer() {
+                const text = this.innerText;
+                document.getElementById('time_to_delete').innerText = text;
+                
+                if (text == '1 день') {
+                    timer = 0;
+                } else if (text == '7 дней') {
+                    timer = 1;
+                } else if (text == '14 дней') {
+                    timer = 2;
+                } else if (text == '30 дней') {
+                    timer = 3;
+                }
+                set_timer(timer);
+            }
             var offset = 0;
             var limit = 0;
             function loadrecs(offset) {
@@ -72,10 +134,16 @@
                         $('#records').empty();
                         // Отображение полученных записей на странице
                         data.forEach(function(record) {
-                            
-                            $('#records').append('<tr style="border-style:0;"> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[0] + '</p></th>' + '<th><p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[2] + '</p></th><tr>');
+                            var date = new Date(record[3] * 1000);
+                            var day = '0' + date.getDate();
+                            var month = '0' + parseInt(date.getMonth() + 1);
+                            var year = date.getFullYear();
+                            var hours = '0' + date.getHours();
+                            var minutes = '0' + date.getMinutes();
+                            var seconds = '0' + date.getSeconds();
+                            var formattedTime = day.substr(-2) +'.' + month.substr(-2) + '.' + year  +' '+ hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+                            $('#records').append('<tr style="border-style:0;"> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[0] + '</p></th>' + '<th><p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[2] + '</p></th> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + formattedTime + '</p></th><tr>');
                         });
-                       
                     },
                     error: function(error) {
                         console.log(error);
@@ -85,16 +153,15 @@
 
             $(document).ready(function() {
                 loadrecs(offset);
+                get_timer();
             });
 
             $('#next').click(function() {
                 offset += 10;
-
                 loadrecs(offset);
             });
             $('#prev').click(function() {
                 offset -= 10;
-
                 loadrecs(offset);
             });
         </script>

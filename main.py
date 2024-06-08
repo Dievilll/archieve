@@ -5,16 +5,19 @@ from fastapi.responses import RedirectResponse, ORJSONResponse, FileResponse, HT
 import starlette.status as status
 import uvicorn
 import os
-import json
+import sqlite3
 #import requests
-from db import get_data_first_page, get_data_one_page
+from apscheduler.schedulers.background import BackgroundScheduler
+from db import get_data_one_page, set_data_from_ais, set_data_from_cv, my_task
 from __init__ import py_logger #py_logger.info(f"Get index page")
 
 app = FastAPI()
+scheduler = BackgroundScheduler()
 router = APIRouter()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+timers = 0
 
 @router.get('/to_configurator')
 async def to_configurator(request: Request):
@@ -25,27 +28,112 @@ async def to_configurator(request: Request):
 
 @router.get('/')
 async def root(request:Request):
+
     #return HTMLResponse(content=html_content, status_code=200)
-    return templates.TemplateResponse("archieve.html", {"request": request})
+    return templates.TemplateResponse("archieve.html", {"request": request, "timer":timers})
 
 @app.get("/api/get_recs")
 async def get_records(offset: int = 0, limit: int = 10):
-    print(offset, limit)
+    global timers
+    print(timers)
+    #print(offset, limit)
     records = get_data_one_page(offset, limit)
+
     return records
-@router.get("/api/next_page")
-async def next_page(id: int = 0):
 
-    return JSONResponse(status_code=200, content=get_data_one_page(id, id +10))
+@app.post("/api/set_timer")
+async def set_timer(timer):
+    global timers
+    timers = int(timer)
+    print(type(timers))
+    
+    #scheduler.add_job(my_task, 'interval', seconds=3, id='timer')
+    #scheduler.remove_all_jobs()
+    #scheduler.start()
+    
+    #scheduler.remove_job('timer')
+    if timers == 0:
+        print("null")
+        try:
+            scheduler.pause()
+            scheduler.remove_all_jobs()
+            scheduler.add_job(my_task, 'interval', days=1, id='timer')
+            scheduler.resume()
+        except:
+            scheduler.add_job(my_task, 'interval', days=1, id='timer')
+            scheduler.start()
+    elif timers == 1:
+        print("odin")
+        try:
+            scheduler.pause()
+            scheduler.remove_all_jobs()
+            scheduler.add_job(my_task, 'interval', days=7, id='timer')
+            scheduler.resume()
+        except:
+            scheduler.add_job(my_task, 'interval', days=7, id='timer')
+            scheduler.start()
+    elif timers == 2:
+        try:
+            scheduler.pause()
+            scheduler.remove_all_jobs()
+            scheduler.add_job(my_task, 'interval', days=14, id='timer')
+            scheduler.resume()
+        except:
+            scheduler.add_job(my_task, 'interval', days=14, id='timer')
+            scheduler.start()
+    elif timers == 3:
+        try:
+            scheduler.pause()
+            scheduler.remove_all_jobs()
+            scheduler.add_job(my_task, 'interval', days=30, id='timer')
+            scheduler.resume()
+        except:
+            scheduler.add_job(my_task, 'interval', days=30, id='timer')
+            scheduler.start()
+    
+    print(timers, "set timer")
 
-@router.get("/api/prev_page")
-async def next_page(id: int = 0):
+@app.get("/api/get_timer")
+async def get_timer():
+    global timers
+    print(timers)
+    return timers
 
-    return JSONResponse(status_code=200, content=get_data_one_page(id, id -10))
+def get_timers():
+    global timers
+    return timers
 
+@app.post("/api/set_rec_ais")
+async def set_rec_ais(data: dict = None):
+    set_data_from_ais(data)
+    print(data)
+    return ORJSONResponse(status_code=200, content={"message":"OK"})
+
+@app.post("/api/set_rec_cv")
+async def set_rec_cv(data: dict = None):
+    set_data_from_cv(data)
+    return ORJSONResponse(status_code=200, content={"message":"OK"})
 
 app.include_router(router)
+
+# @app.on_event("startup")
+# def add_job_and_start():
+#     scheduler.pause()
+#     timers = get_timers()
+#     print(timers, "schedule")
+#     if timers == 0:
+#         scheduler.add_job(my_task, 'interval', seconds=10, coalesce=True, id='timer')
+#     elif timers == 1:
+#         scheduler.add_job(my_task, 'interval', seconds=30, coalesce=True, id='timer')
+#     elif timers == 2:
+#         scheduler.add_job(my_task, 'interval', days=14, coalesce=True, id='timer')
+#     elif timers == 3:
+#         scheduler.add_job(my_task, 'interval', days=30, coalesce=True, id='timer')
+#     scheduler.start()
+
+
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host='0.0.0.0', port=9030)
+
