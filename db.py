@@ -43,11 +43,7 @@ def set_data_from_ais(data: dict):
     cur.close()
     #conn.close()
 
-<<<<<<< HEAD
 def get_fist_id():
-=======
-def get_data_one_page(offset):
->>>>>>> 0a09b9d8e5546878b02778cf24acd4155308182f
     cur = conn.cursor()
     cur.execute("SELECT id FROM json_data ORDER BY id ASC LIMIT 1")
     result = cur.fetchone()
