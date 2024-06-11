@@ -50,7 +50,10 @@
                 </ul>
               </div>
         </div>
-        <div class="container" style="margin-top: 50px; width:50%">
+        <div class="container" style="margin-top:2%;display:flex; justify-content: center">
+            <button class="btn btn-secondary" type="button" id="forcibly_delete" style="color: rgb(201, 1, 1); font-weight: bold">Принудительно очистить базу</button>
+        </div>
+        <div class="container" style="margin-top: 50px; width:50%;">
             <table class="table">
                 <thead style="border-style:none">
                     <tr style="border: 0;">
@@ -165,6 +168,21 @@
                 });
             };
 
+            function delete_base() {
+                $.ajax({
+                    url: '/api/delete_base',
+                    type: 'POST',
+                    success: function(data) {
+                        // Очистка текущих записей
+                            alert("База очищена");
+                            loadrecs(offset);
+                    },
+                    error: function(error) {
+                        console.log(error + "Ошибка удаление базы данных");
+                    }
+                });
+            };
+
             $(document).ready(function() {
                 loadrecs(offset);
                 get_timer();
@@ -175,6 +193,10 @@
                 offset += 10;
                 console.log(offset);
                 loadrecs(offset);
+            });
+
+            $('#forcibly_delete').click(function() {
+                delete_base();
             });
             $('#prev').click(function() {
                 offset -= 10;
