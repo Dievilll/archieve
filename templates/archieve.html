@@ -81,7 +81,7 @@
             console.log(el.innerText);
             function set_timer(timer) {
                 $.ajax({
-                    url: '/api/set_timer?timer=' + timer,
+                    url: '/api/db/set_timer?timer=' + timer,
                     type: 'POST',
                     error: function(error) {
                         console.log(error + "Ошибка установки значения таймера");
@@ -91,7 +91,7 @@
 
             function get_timer(timer) {
                 $.ajax({
-                    url: '/api/get_timer',
+                    url: '/api/db/get_timer',
                     type: 'GET',
                     success: function(data) {
                         timer = data;
@@ -114,7 +114,7 @@
 
             function get_offset() {
                 $.ajax({
-                    url: '/api/get_id_first_rec',
+                    url: '/api/records/get_id_first_rec',
                     type: 'GET',
                     success: function(data) {
                         offset = data;
@@ -140,26 +140,41 @@
                 }
                 set_timer(timer);
             }
-            var offset = 0;
-            var limit = 0;
+            let offset = 0;
+            let limit = 0;
             function loadrecs(offset) {
                 $.ajax({
-                    url: '/api/get_recs?offset=' + offset,
+                    url: '/api/records/get_recs?offset=' + offset,
                     type: 'GET',
                     success: function(data) {
                         // Очистка текущих записей
                         $('#records').empty();
                         // Отображение полученных записей на странице
                         data.forEach(function(record) {
-                            var date = new Date(record[3] * 1000);
-                            var day = '0' + date.getDate();
-                            var month = '0' + parseInt(date.getMonth() + 1);
-                            var year = date.getFullYear();
-                            var hours = '0' + date.getHours();
-                            var minutes = '0' + date.getMinutes();
-                            var seconds = '0' + date.getSeconds();
-                            var formattedTime = day.substr(-2) +'.' + month.substr(-2) + '.' + year  +' '+ hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-                            $('#records').append('<tr style="border-style:0;"> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[0] + '</p></th>' + '<th><p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record[2] + '</p></th> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + formattedTime + '</p></th><tr>');
+                            let date = new Date(record.time * 1000);
+                            let day = '0' + date.getDate();
+                            let month = '0' + parseInt(date.getMonth() + 1);
+                            let year = date.getFullYear();
+                            let hours = '0' + date.getHours();
+                            let minutes = '0' + date.getMinutes();
+                            let seconds = '0' + date.getSeconds();
+                            let formattedTime = day.substr(-2) +'.' + month.substr(-2) + '.' + year  +' '+ hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+                            //console.log(Date.now()/1000 - record[3])
+
+
+                            
+                            // ФИЧА ПОДСВЕТКИ ЗА ЧАС ДО УДАЛЕНИЯ
+
+
+
+                            //if((Date.now()/1000 - record[3]) > 1 * 60 * 60) {
+                                //$('#records').append('<tr style="border-style:0;"> <th> <p class="card bg-dark" style="font-size: 20px; color: rgb(201, 1, 1); text-align: center">' + record[0] + '</p></th>' + '<th><p class="card bg-dark" style="font-size: 20px; color: rgb(201, 1, 1); text-align: center">' + record[2] + '</p></th> <th> <p class="card bg-dark" style="font-size: 20px; color: rgb(201, 1, 1); text-align: center">' + formattedTime + '</p></th><tr>');
+                            //}
+                            //else
+                            //{
+                            $('#records').append('<tr style="border-style:0;"> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record.id + '</p></th>' + '<th><p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + record.receive + '</p></th> <th> <p class="card bg-dark" style="font-size: 20px; color:#3c89fd; text-align: center">' + formattedTime + '</p></th><tr>');
+                            //}
+                            
                         });
                     },
                     error: function(error) {
@@ -170,7 +185,7 @@
 
             function delete_base() {
                 $.ajax({
-                    url: '/api/delete_base',
+                    url: '/api/db/delete_base',
                     type: 'POST',
                     success: function(data) {
                         // Очистка текущих записей
